@@ -8,7 +8,7 @@ var dockyunread = {
 	
 	onClose: function(e) {
     	this.initialized = true;
-	    this.updateUnreadCount(0, true);
+	    this.resetUnreadCount();
 	},
 	
 	resetUnreadCount: function() {
@@ -39,11 +39,18 @@ var dockyunread = {
         process.run(blockingProcess, args, args.length);
     },
 
-	onItemCountChanged : function(change) {
-		var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);  
+	onItemCountChanged : function() {
+	    if (this.timeoutId != -1) {
+	        window.clearTimeout(this.timeoutId);
+	    }
+	    // Schedule on the main thread
+		this.timeoutId = window.setTimeout(this.performUnreadCount, 1000, this);
+    },
+    
+    performUnreadCount: function(that) {
+        var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);  
         var accounts = acctMgr.accounts;  
 		var totalCount = 0;
-		Application.console.log("Count started...");
         for (var i = 0; i < accounts.Count(); i++) {
             var account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount);  
             var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
@@ -51,35 +58,29 @@ var dockyunread = {
                 var subFolders = rootFolder.subFolders; // nsIMsgFolder
                 while(subFolders.hasMoreElements()) {
                     var folder = subFolders.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
-                    if(folder.prettyName == this.inboxName) {
+                    if(folder.prettyName == that.inboxName) {
                         totalCount += folder.getNumUnread(false);
                     }
                 }
             }
        }
-       this.updateUnreadCount(totalCount + change, false);
-    },
-    
+       that.updateUnreadCount(totalCount, false);
+    },    
     
     folderListener : {
 		OnItemAdded : function(parent, item, viewString) {
-					dockyunread.onItemCountChanged(1);
+				dockyunread.onItemCountChanged();
 		},
 		OnItemRemoved : function(parent, item, viewString) {
-    				dockyunread.onItemCountChanged(-1);
+				dockyunread.onItemCountChanged();
 		},
 		OnItemPropertyFlagChanged : function(item, property, oldFlag, newFlag) {
 		    if (property=="Status"){
-                if (!item.isRead){
-                    dockyunread.onItemCountChanged(1);
-                } else {
-                    dockyunread.onItemCountChanged(-1);
-                }
+                dockyunread.onItemCountChanged();
             }
-
 		},
 		OnItemEvent : function(item, event) {
-					dockyunread.onItemCountChanged(0);
+				dockyunread.onItemCountChanged();
 		},
 		
 		OnFolderLoaded : function(aFolder) {},
@@ -90,7 +91,8 @@ var dockyunread = {
 		OnItemUnicharPropertyChanged : function(item, property, oldValue, newValue) {}
 	},
     mailSession: '',
-    notifyFlags: ''
+    notifyFlags: '',
+    timeoutId: -1
 };
 
 window.addEventListener("load", function(e) { dockyunread.onLoad(e); }, false);
