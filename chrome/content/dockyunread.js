@@ -2,8 +2,6 @@ var dockyunread = {
 	onLoad : function(e) {
 		// initialization code
 		this.initialized = true;
-        this.conf = document.getElementById("docky-unread-conf");
-        this.inboxName = this.conf.getString('inbox');
 	},
 	
 	onClose: function(e) {
@@ -48,6 +46,7 @@ var dockyunread = {
     },
     
     performUnreadCount: function(that) {
+        const MSG_FOLDER_FLAG_INBOX = 0x1000;
         var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);  
         var accounts = acctMgr.accounts;  
 		var totalCount = 0;
@@ -58,7 +57,7 @@ var dockyunread = {
                 var subFolders = rootFolder.subFolders; // nsIMsgFolder
                 while(subFolders.hasMoreElements()) {
                     var folder = subFolders.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
-                    if(folder.prettyName == that.inboxName) {
+                    if(folder.flags & MSG_FOLDER_FLAG_INBOX) {
                         totalCount += folder.getNumUnread(false);
                     }
                 }
