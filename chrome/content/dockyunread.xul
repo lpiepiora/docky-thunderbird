@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+  - 
+  - ***** END LICENSE BLOCK ***** -->
+
+
+<overlay id="docky-unread-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="dockyunread.js"/>
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="docky-unread-conf" src="chrome://dockyunread/locale/docky-unread.properties"/>
+  </stringbundleset>
+</overlay>

@@ -1,0 +1,22 @@
+/* This is just an example.  You shouldn't do this. */
+#dockyunread-hello
+{
+  color: red ! important;
+}
+#dockyunread-toolbar-button
+{
+  list-style-image: url("chrome://dockyunread/skin/toolbar-button.png");
+  -moz-image-region: rect(0px 24px 24px 0px);
+}
+#dockyunread-toolbar-button:hover
+{
+  -moz-image-region: rect(24px 24px 48px  0px);
+}
+[iconsize="small"] #dockyunread-toolbar-button
+{
+  -moz-image-region: rect( 0px 40px 16px 24px);
+}
+[iconsize="small"] #dockyunread-toolbar-button:hover
+{
+  -moz-image-region: rect(24px 40px 40px 24px);
+}

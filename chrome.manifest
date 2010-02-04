@@ -1,0 +1,4 @@
+content   dockyunread                 chrome/content/
+skin      dockyunread   classic/1.0   chrome/skin/
+locale    dockyunread   en-US         chrome/locale/en-US/
+overlay chrome://messenger/content/messenger.xul chrome://dockyunread/content/dockyunread.xul
