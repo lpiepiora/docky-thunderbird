@@ -11,7 +11,11 @@ def toDockyItem(path):
 	return itemInt
 
 bus = dbus.SessionBus()
-obj = bus.get_object("org.gnome.Docky", "/org/gnome/Docky")
+try:
+	obj = bus.get_object("org.gnome.Docky", "/org/gnome/Docky")
+except:
+	exit(-1)
+
 docky = dbus.Interface(obj, "org.gnome.Docky")
 
 if len(sys.argv) < 2:
