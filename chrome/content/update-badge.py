@@ -3,6 +3,7 @@
 import sys
 import dbus
 import os
+import re
 
 def toDockyItem(path):
 	itemObj = bus.get_object("org.gnome.Docky", path)
@@ -21,7 +22,7 @@ else:
 dockyItems = [toDockyItem(path) for path in docky.DockItemPaths()]
 
 for item in dockyItems:
-	if (item.GetOwnsDesktopFile() and item.GetDesktopFile().endswith("thunderbird.desktop")):
+	if (item.GetOwnsDesktopFile() and re.search("thunderbird[^/]*.desktop", item.GetDesktopFile())):
 		if (unread_count > 0):
 			item.SetBadgeText("%s" % unread_count)
 		else:
