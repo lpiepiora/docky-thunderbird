@@ -47,23 +47,21 @@ var dockyunread = {
 	
 	performUnreadCount: function(that) {
 		const MSG_FOLDER_FLAG_INBOX = 0x1000;
-		var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);  
-		var accounts = acctMgr.accounts;  
-		var totalCount = 0;
-		for (var i = 0; i < accounts.Count(); i++) {
-			var account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount);  
-			var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
-			if (rootFolder.hasSubFolders) {
-				var subFolders = rootFolder.subFolders; // nsIMsgFolder
-				while(subFolders.hasMoreElements()) {
-					var folder = subFolders.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
-					if(folder.flags & MSG_FOLDER_FLAG_INBOX) {
-						totalCount += folder.getNumUnread(false);
-					}
-				}
-			}
-	}
-	that.updateUnreadCount(totalCount, false);
+                var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
+                var accounts = acctMgr.accounts;
+                var totalCount = 0;
+                for (var i = 0; i < accounts.Count(); i++) {
+                        var account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount);
+                        var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
+                        if (rootFolder.hasSubFolders) {
+                                var subFolders = rootFolder.rootFolder.getAllFoldersWithFlag(MSG_FOLDER_FLAG_INBOX); //nsISupportsArray
+                                for(var i = 0; i < subFolders.Count(); i++) {
+                                        var folder = subFolders.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgFolder);
+                                        totalCount += folder.getNumUnread(false);
+                                }
+                        }
+                }
+                that.updateUnreadCount(totalCount, false);
 	},    
 	
 	folderListener : {
