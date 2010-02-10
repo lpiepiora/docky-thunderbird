@@ -1,4 +1,5 @@
 var dockyunread = {
+	MSG_FOLDER_FLAG_INBOX: 0x1000,
 	onLoad : function(e) {
 		// initialization code
 		this.initialized = true;
@@ -46,7 +47,6 @@ var dockyunread = {
 	},
 	
 	performUnreadCount: function(that) {
-		const MSG_FOLDER_FLAG_INBOX = 0x1000;
                 var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
                 var accounts = acctMgr.accounts;
                 var totalCount = 0;
@@ -54,16 +54,41 @@ var dockyunread = {
                         var account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount);
                         var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
                         if (rootFolder.hasSubFolders) {
-                                var subFolders = rootFolder.rootFolder.getAllFoldersWithFlag(MSG_FOLDER_FLAG_INBOX); //nsISupportsArray
-                                for(var i = 0; i < subFolders.Count(); i++) {
-                                        var folder = subFolders.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgFolder);
-                                        totalCount += folder.getNumUnread(false);
-                                }
+				totalCount += that.getTotalCount(rootFolder);
                         }
                 }
                 that.updateUnreadCount(totalCount, false);
-	},    
+	},
+
+	getTotalCount: function(rootFolder) {
+		if(rootFolder.getAllFoldersWithFlag) {
+			return this._getTotalCountTB2(rootFolder);
+		} else {
+			return this._getTotalCountTB3(rootFolder);
+		}
+	},
 	
+	_getTotalCountTB2: function(rootFolder) {
+	   var totalCount = 0;
+	   var subFolders = rootFolder.getAllFoldersWithFlag(this.MSG_FOLDER_FLAG_INBOX); //nsISupportsArray
+	   for(var i = 0; i < subFolders.Count(); i++) {
+		   var folder = subFolders.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgFolder);
+		   totalCount += folder.getNumUnread(false);
+	   }
+	   return totalCount;
+	},
+
+	_getTotalCountTB3: function(rootFolder) {
+	   var totalCount = 0;
+	   var subFolders = rootFolder.getFoldersWithFlags(this.MSG_FOLDER_FLAG_INBOX); //nsIArray
+	   var subFoldersEnumerator = subFolders.enumerate();
+	   while(subFoldersEnumerator.hasMoreElements()) {
+		var folder = subFoldersEnumerator.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
+		totalCount += folder.getNumUnread(false);
+	   }
+	   return totalCount;
+	},
+
 	folderListener : {
 		OnItemAdded : function(parent, item, viewString) {
 				dockyunread.onItemCountChanged();

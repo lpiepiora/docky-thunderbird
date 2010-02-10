@@ -4,7 +4,7 @@
     <em:id>docky-unread@lpiepiora.com</em:id>
     <em:type>2</em:type>
     <em:name>Docky Unread Count</em:name>
-    <em:version>0.1</em:version>
+    <em:version>0.3</em:version>
     
     <em:description>Displays number of unread messages in all inboxes</em:description>
     <em:aboutURL>chrome://dockyunread/content/about.xul</em:aboutURL>
