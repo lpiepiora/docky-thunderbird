@@ -1,0 +1,38 @@
+<project name="Docky Unread Count" default="package" basedir=".">
+	<description>
+		builds docky thunderbird extension
+	</description>
+
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
+	<property name="update-script" value="update-badge.py" />
+
+	<target name="init">
+		<mkdir dir="${dist}" />
+		<mkdir dir="${build}" />
+	</target>
+
+	<target name="package" depends="init">
+		<copy todir="${build}">
+			<fileset dir="${src}" />
+			<filterset>
+				<filtersfile file="build.properties" />
+			</filterset>
+		</copy>
+		<zip destfile="${dist}/docky-thunderbird.xpi">
+			<zipfileset dir="${build}">
+				<exclude name="**/${update-script}" />
+			</zipfileset>
+			<zipfileset dir="${build}" filemode="555">
+				<include name="**/${update-script}" />
+			</zipfileset>
+		</zip>
+	</target>
+
+	<target name="clean">
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+
+</project>

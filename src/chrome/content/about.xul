@@ -8,7 +8,7 @@
   <groupbox align="center" orient="horizontal">
     <vbox>
       <text value="Docky Unread Count" style="font-weight: bold; font-size: x-large;"/>
-      <text value="&version; 0.1"/>
+      <text value="&version; @VERSION@"/>
       <separator class="thin"/>
       <text value="&createdBy;" style="font-weight: bold;"/>
       <text value="Lukasz Piepiora"/>
