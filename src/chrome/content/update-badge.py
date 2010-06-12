@@ -9,7 +9,7 @@ import re
 DOCKY21_NAME = 'org.freedesktop.DockManager'
 DOCKY21_PATH = '/org/freedesktop/DockManager'
 ITEM21_NAME = 'org.gnome.Docky'
-ITEM21_IFACE = 'org.gnome.Docky.Item'
+ITEM21_IFACE = 'org.freedesktop.DockItem'
 
 class DockyDBus:
 	def __init__(self, name=DOCKY21_NAME, path=DOCKY21_PATH, itemName = ITEM21_NAME, itemIFace = ITEM21_IFACE):
