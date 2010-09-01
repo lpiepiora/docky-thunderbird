@@ -6,10 +6,10 @@ from dbus import Interface
 import os
 import re
 
-DOCKY21_NAME = 'org.freedesktop.DockManager'
-DOCKY21_PATH = '/org/freedesktop/DockManager'
+DOCKY21_NAME = 'net.launchpad.DockManager'
+DOCKY21_PATH = '/net/launchpad/DockManager'
 ITEM21_NAME = 'org.gnome.Docky'
-ITEM21_IFACE = 'org.freedesktop.DockItem'
+ITEM21_IFACE = 'net.launchpad.DockItem'
 
 class DockyDBus:
 	def __init__(self, name=DOCKY21_NAME, path=DOCKY21_PATH, itemName = ITEM21_NAME, itemIFace = ITEM21_IFACE):
@@ -17,6 +17,8 @@ class DockyDBus:
 		self.obj = self.bus.get_object(name, path)
 		self.count = 0 if len(sys.argv) < 2 else int(sys.argv[1])
 		## Path and interfaces
+		self.name = name
+		self.path = path
 		self.itemName = itemName
 		self.itemIFace = itemIFace
 		
@@ -40,11 +42,15 @@ class DockyDBus:
 		item.UpdateDockItem({"badge": text })
 
 	def _getItemsPaths(self):
-		return Interface(self.obj, "org.freedesktop.DockManager").GetItems()
+		return Interface(self.obj, self.name).GetItems()
 
 	def _getFileName(self, item):
 		props = Interface(item, 'org.freedesktop.DBus.Properties')
-		return props.Get('org.freedesktop.DockItem', 'DesktopFile')
+		return props.Get(self.itemIFace, 'DesktopFile')
+
+class DockyDBus21(DockyDBus):
+	def __init__(self):
+		DockyDBus.__init__(self, 'org.freedesktop.DockManager', '/org/freedesktop/DockManager', 'org.gnome.Docky', 'org.freedesktop.DockItem');
 
 class DockyDBus20(DockyDBus):
 	def __init__(self):
@@ -66,6 +72,11 @@ class DockyDBus20(DockyDBus):
 try:
 	DockyDBus().update()
 except BaseException as e:
-	print "Couldn't connect to docky - using fallback to v2.0.x. Reason: ", e
-	#Fallback to old docky
-	DockyDBus20().update()
+	print "Couldn't connect to docky - using fallback to v2.1.x. Reason: ", e
+	#Fallback to 21
+	try:
+		DockyDBus21.update()
+	except BaseException as e:
+		print "Couldn't connect to docky - using fallback to 2.0.x. Reason: ", e
+		#Fallback to old docky
+		DockyDBus20().update()
