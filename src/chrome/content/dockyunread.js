@@ -15,11 +15,6 @@ var dockyunread = {
 	},
 	
 	updateUnreadCount: function(x, blockingProcess){
-		try {
-			netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-		} catch (e) {
-			alert(noReading);
-		}
 		var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 		
 		const DIR_SERVICE = new Components.Constructor("@mozilla.org/file/directory_service;1","nsIProperties");
@@ -30,9 +25,10 @@ var dockyunread = {
 		}
 		
 		path = path + "/extensions/docky-unread@lpiepiora.com/chrome/content/update-badge.py";
-		file.initWithPath(path);
+
+		file.initWithPath("/usr/bin/env");
 		
-		var args = [x];
+		var args = ["python", path, x];
 		var process = Components.classes["@mozilla.org/process/util;1"].createInstance(Components.interfaces.nsIProcess);
 		process.init(file);
 		process.run(blockingProcess, args, args.length);
