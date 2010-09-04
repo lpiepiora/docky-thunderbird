@@ -75,7 +75,7 @@ except BaseException as e:
 	print "Couldn't connect to docky - using fallback to v2.1.x. Reason: ", e
 	#Fallback to 21
 	try:
-		DockyDBus21.update()
+		DockyDBus21().update()
 	except BaseException as e:
 		print "Couldn't connect to docky - using fallback to 2.0.x. Reason: ", e
 		#Fallback to old docky
