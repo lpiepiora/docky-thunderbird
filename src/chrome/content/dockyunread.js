@@ -2,12 +2,24 @@ var dockyunread = {
 	MSG_FOLDER_FLAG_INBOX: 0x1000,
 	onLoad : function(e) {
 		dump("Loading Docky Unread Count...\n");
+		
+		// read all the preferences
+		const PREF_SERVICE = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
+		this.prefs = PREF_SERVICE.getBranch("extensions.docky-unread@lpiepiora.com.");
+		this.prefs.QueryInterface(Components.interfaces.nsIPrefBranch2);
+		this.prefs.addObserver("", this, false);
+     
+     	this.traverseDeep = this.prefs.getBoolPref("traverse-deep");
+ 
 		// initialization code
 		this.initialized = true;
 	},
 	
 	onClose: function(e) {
 		dump("Closing Docky Unread Count...\n");
+		
+		this.prefs.removeObserver("", this);
+		
 		this.initialized = true;
 		this.resetUnreadCount();
 	},
@@ -83,10 +95,13 @@ var dockyunread = {
 		dump("Finding all folders with inbox flag : " + this.MSG_FOLDER_FLAG_INBOX + "\n");
 		var subFolders = rootFolder.getAllFoldersWithFlag(this.MSG_FOLDER_FLAG_INBOX); //nsISupportsArray
 		dump("Found " + subFolders.Count() + "folders\n");
+		
 		for(var i = 0; i < subFolders.Count(); i++) {
 			var folder = subFolders.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgFolder);
-			totalCount += folder.getNumUnread(false);
+			dump("Get Number of unread messages with travese deep = " +  this.traverseDeep + "\n");
+			totalCount += folder.getNumUnread(this.traverseDeep);
 		}
+		
 		dump("Found total " + totalCount + "in all subFolders\n");
 		return totalCount;
 	},
@@ -97,10 +112,13 @@ var dockyunread = {
 		dump("Finding all folders with inbox flag : " + this.MSG_FOLDER_FLAG_INBOX + "\n");
 		var subFolders = rootFolder.getFoldersWithFlags(this.MSG_FOLDER_FLAG_INBOX); //nsIArray
 		var subFoldersEnumerator = subFolders.enumerate();
+		
 		while(subFoldersEnumerator.hasMoreElements()) {
 			var folder = subFoldersEnumerator.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
-			totalCount += folder.getNumUnread(false);
+			dump("Get Number of unread messages with travese deep = " +  this.traverseDeep + "\n");
+			totalCount += folder.getNumUnread(this.traverseDeep);
 		}
+		
 		dump("Found total " + totalCount + "in all subFolders\n");
 		return totalCount;
 	},
@@ -128,6 +146,20 @@ var dockyunread = {
 		OnItemBoolPropertyChanged : function(item, property, oldValue, newValue) {},
 		OnItemUnicharPropertyChanged : function(item, property, oldValue, newValue) {}
 	},
+	
+	observe: function(subject, topic, data) {
+		if (topic != "nsPref:changed") {
+			return;
+		}
+ 
+		switch(data) {
+			case "traverse-deep":
+				this.traverseDeep = this.prefs.getBoolPref("traverse-deep");
+				dockyunread.onItemCountChanged();
+			break;
+		}
+	},
+	
 	mailSession: '',
 	notifyFlags: '',
 	timeoutId: -1

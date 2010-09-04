@@ -8,6 +8,9 @@
     
     <em:description>Displays number of unread messages in all inboxes</em:description>
     <em:aboutURL>chrome://dockyunread/content/about.xul</em:aboutURL>
+    
+    <em:optionsURL>chrome://dockyunread/content/options.xul</em:optionsURL>
+    
     <em:targetApplication>
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id> <!-- Thunderbird -->
