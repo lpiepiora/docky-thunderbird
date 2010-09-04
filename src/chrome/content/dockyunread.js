@@ -1,21 +1,25 @@
 var dockyunread = {
 	MSG_FOLDER_FLAG_INBOX: 0x1000,
 	onLoad : function(e) {
+		dump("Loading Docky Unread Count...\n");
 		// initialization code
 		this.initialized = true;
 	},
 	
 	onClose: function(e) {
+		dump("Closing Docky Unread Count...\n");
 		this.initialized = true;
 		this.resetUnreadCount();
 	},
 	
 	resetUnreadCount: function() {
+		dump("Resetting unread badge\n");
 		this.updateUnreadCount(0, true);
 	},
 	
 	updateUnreadCount: function(x, blockingProcess){
-		var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+		dump("Calling update count\n");
+		dump("Finding path...\n");
 		
 		const DIR_SERVICE = new Components.Constructor("@mozilla.org/file/directory_service;1","nsIProperties");
 		try { 
@@ -25,16 +29,22 @@ var dockyunread = {
 		}
 		
 		path = path + "/extensions/docky-unread@lpiepiora.com/chrome/content/update-badge.py";
+		
+		dump("Found path: " + path + "\n");
 
+		var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);		
 		file.initWithPath("/usr/bin/env");
 		
 		var args = ["python", path, x];
 		var process = Components.classes["@mozilla.org/process/util;1"].createInstance(Components.interfaces.nsIProcess);
 		process.init(file);
+		
+		dump("Initialising process with arguments " + args + " is blocking = " + blockingProcess + "\n");
 		process.run(blockingProcess, args, args.length);
 	},
 
 	onItemCountChanged : function() {
+		dump("Item count changed...\n");
 		if (this.timeoutId != -1) {
 			window.clearTimeout(this.timeoutId);
 		}
@@ -43,17 +53,20 @@ var dockyunread = {
 	},
 	
 	performUnreadCount: function(that) {
-                var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
-                var accounts = acctMgr.accounts;
-                var totalCount = 0;
-                for (var i = 0; i < accounts.Count(); i++) {
-                        var account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount);
-                        var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
-                        if (rootFolder.hasSubFolders) {
-				totalCount += that.getTotalCount(rootFolder);
-                        }
-                }
-                that.updateUnreadCount(totalCount, false);
+		dump("Counting unread messages...\n");
+		var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
+		var accounts = acctMgr.accounts;
+		var totalCount = 0;
+		dump("Found " + accounts.Count() + " accounts\n");
+		for (var i = 0; i < accounts.Count(); i++) {
+			var account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount);
+			var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
+				if (rootFolder.hasSubFolders) {
+					totalCount += that.getTotalCount(rootFolder);
+				}
+		}
+		dump("Found total : " + totalCount + "\n");
+		that.updateUnreadCount(totalCount, false);
 	},
 
 	getTotalCount: function(rootFolder) {
@@ -65,24 +78,31 @@ var dockyunread = {
 	},
 	
 	_getTotalCountTB2: function(rootFolder) {
-	   var totalCount = 0;
-	   var subFolders = rootFolder.getAllFoldersWithFlag(this.MSG_FOLDER_FLAG_INBOX); //nsISupportsArray
-	   for(var i = 0; i < subFolders.Count(); i++) {
-		   var folder = subFolders.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgFolder);
-		   totalCount += folder.getNumUnread(false);
-	   }
-	   return totalCount;
+		dump("Using _getTotalCountTB2\n");
+		var totalCount = 0;
+		dump("Finding all folders with inbox flag : " + this.MSG_FOLDER_FLAG_INBOX + "\n");
+		var subFolders = rootFolder.getAllFoldersWithFlag(this.MSG_FOLDER_FLAG_INBOX); //nsISupportsArray
+		dump("Found " + subFolders.Count() + "folders\n");
+		for(var i = 0; i < subFolders.Count(); i++) {
+			var folder = subFolders.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgFolder);
+			totalCount += folder.getNumUnread(false);
+		}
+		dump("Found total " + totalCount + "in all subFolders\n");
+		return totalCount;
 	},
 
 	_getTotalCountTB3: function(rootFolder) {
-	   var totalCount = 0;
-	   var subFolders = rootFolder.getFoldersWithFlags(this.MSG_FOLDER_FLAG_INBOX); //nsIArray
-	   var subFoldersEnumerator = subFolders.enumerate();
-	   while(subFoldersEnumerator.hasMoreElements()) {
-		var folder = subFoldersEnumerator.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
-		totalCount += folder.getNumUnread(false);
-	   }
-	   return totalCount;
+		dump("Using _getTotalCountTB3\n");
+		var totalCount = 0;
+		dump("Finding all folders with inbox flag : " + this.MSG_FOLDER_FLAG_INBOX + "\n");
+		var subFolders = rootFolder.getFoldersWithFlags(this.MSG_FOLDER_FLAG_INBOX); //nsIArray
+		var subFoldersEnumerator = subFolders.enumerate();
+		while(subFoldersEnumerator.hasMoreElements()) {
+			var folder = subFoldersEnumerator.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
+			totalCount += folder.getNumUnread(false);
+		}
+		dump("Found total " + totalCount + "in all subFolders\n");
+		return totalCount;
 	},
 
 	folderListener : {
