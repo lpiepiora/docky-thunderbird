@@ -29,7 +29,7 @@ class DockyDBus:
 			else:
 				self._setBadge(item, '')
 				
-	def __getThunderbirdDockyItems(self, expr="thunderbird[^/]*.desktop"):
+	def __getThunderbirdDockyItems(self, expr="(thunderbird|icedove)[^/]*.desktop"):
 		dockyItems = [self.__toDockyItem(path) for path in self._getItemsPaths()]
 		return [option for option in dockyItems if re.search(expr, self._getFileName(option))]
 
