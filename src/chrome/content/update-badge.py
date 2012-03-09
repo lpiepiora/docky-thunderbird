@@ -31,7 +31,7 @@ class DockyDBus:
 				
 	def __getThunderbirdDockyItems(self, expr="(thunderbird|icedove)[^/]*.desktop"):
 		dockyItems = [self.__toDockyItem(path) for path in self._getItemsPaths()]
-		return [option for option in dockyItems if re.search(expr, self._getFileName(option))]
+		return [option for option in dockyItems if re.search(expr, self._getFileName(option), re.IGNORECASE)]
 
 	def __toDockyItem(self, path):
 		itemObj = self.bus.get_object(self.itemName, path)
@@ -65,18 +65,28 @@ class DockyDBus20(DockyDBus):
 	def _setBadge(self, item, text):
 		item.SetBadgeText(text) if text else item.ResetBadgeText()
 		
+class KDEDBus(DockyDBus):
+	def __init__(self):
+		DockyDBus.__init__(self, 'net.launchpad.DockManager', '/net/launchpad/DockManager', 'net.launchpad.DockManager', 'net.launchpad.DockItem');
 
 ######
 ######
 ######
-try:
-	DockyDBus().update()
-except BaseException as e:
-	print "Couldn't connect to docky - using fallback to v2.1.x. Reason: ", e
-	#Fallback to 21
+if os.environ.get('KDE_FULL_SESSION') == 'true': # running under kde
 	try:
-		DockyDBus21().update()
+		KDEDBus().update();
 	except BaseException as e:
-		print "Couldn't connect to docky - using fallback to 2.0.x. Reason: ", e
-		#Fallback to old docky
-		DockyDBus20().update()
+		print "Couldn't connect to KDE Dockmanager - falling back to Docky. Reason: ", e
+else:	#Running under something else :(
+	try:
+		DockyDBus().update()
+	except BaseException as e:
+		print "Couldn't connect to docky - using fallback to v2.1.x. Reason: ", e
+		#Fallback to 21
+		try:
+			DockyDBus21().update()
+		except BaseException as e:
+			print "Couldn't connect to docky - using fallback to 2.0.x. Reason: ", e
+			#Fallback to old docky
+			DockyDBus20().update()
+
