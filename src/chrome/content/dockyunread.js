@@ -1,4 +1,5 @@
 var dockyunread = {
+	MSG_FOLDER_FLAG_ALL: 0x0004,
 	MSG_FOLDER_FLAG_INBOX: 0x1000,
 	onLoad : function(e) {
 		dump("Loading Docky Unread Count...\n");
@@ -69,9 +70,9 @@ var dockyunread = {
 		var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
 		var accounts = acctMgr.accounts;
 		var totalCount = 0;
-		dump("Found " + accounts.Count() + " accounts\n");
-		for (var i = 0; i < accounts.Count(); i++) {
-			var account = accounts.QueryElementAt(i, Components.interfaces.nsIMsgAccount);
+		dump("Found " + accounts.length + " accounts\n");
+		for (var i = 0; i < accounts.length; i++) {
+			var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);
 			var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
 				if (rootFolder.hasSubFolders) {
 					totalCount += that.getTotalCount(rootFolder);
@@ -108,15 +109,16 @@ var dockyunread = {
 
 	_getTotalCountTB3: function(rootFolder) {
 		dump("Using _getTotalCountTB3\n");
+		var folderFlag = this.traverseDeep ? this.MSG_FOLDER_FLAG_ALL : this.MSG_FOLDER_FLAG_INBOX
 		var totalCount = 0;
-		dump("Finding all folders with inbox flag : " + this.MSG_FOLDER_FLAG_INBOX + "\n");
-		var subFolders = rootFolder.getFoldersWithFlags(this.MSG_FOLDER_FLAG_INBOX); //nsIArray
+		dump("Finding all folders with inbox flag : " + folderFlag + "\n");
+		var subFolders = rootFolder.getFoldersWithFlags(folderFlag); //nsIArray
 		var subFoldersEnumerator = subFolders.enumerate();
 		
 		while(subFoldersEnumerator.hasMoreElements()) {
 			var folder = subFoldersEnumerator.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
 			dump("Get Number of unread messages with travese deep = " +  this.traverseDeep + "\n");
-			totalCount += folder.getNumUnread(this.traverseDeep);
+			totalCount += folder.getNumUnread(false);
 		}
 		
 		dump("Found total " + totalCount + "in all subFolders\n");
