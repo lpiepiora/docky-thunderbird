@@ -118,7 +118,9 @@ var dockyunread = {
 		while(subFoldersEnumerator.hasMoreElements()) {
 			var folder = subFoldersEnumerator.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
 			dump("Get Number of unread messages with travese deep = " +  this.traverseDeep + "\n");
-			totalCount += folder.getNumUnread(false);
+			var count = folder.getNumUnread(false);
+			if (count > 0)
+				totalCount += count;
 		}
 		
 		dump("Found total " + totalCount + "in all subFolders\n");
