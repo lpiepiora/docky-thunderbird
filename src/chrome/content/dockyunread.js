@@ -56,15 +56,16 @@ var dockyunread = {
 	},
 
 	onItemCountChanged : function() {
+                var that = this;
 		dump("Item count changed...\n");
 		if (this.timeoutId != -1) {
 			window.clearTimeout(this.timeoutId);
 		}
 		// Schedule on the main thread
-		this.timeoutId = window.setTimeout(this.performUnreadCount, 1000, this);
+		this.timeoutId = window.setTimeout(function() { that.performUnreadCount(); }, 1000);
 	},
 	
-	performUnreadCount: function(that) {
+	performUnreadCount: function() {
 		dump("Counting unread messages...\n");
 		var acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
 		var accounts = acctMgr.accounts;
@@ -74,11 +75,11 @@ var dockyunread = {
 			var account = accounts.queryElementAt(i, Components.interfaces.nsIMsgAccount);
 			var rootFolder = account.incomingServer.rootFolder; // nsIMsgFolder            
 				if (rootFolder.hasSubFolders) {
-					totalCount += that.getTotalCount(rootFolder);
+					totalCount += this.getTotalCount(rootFolder);
 				}
 		}
 		dump("Found total : " + totalCount + "\n");
-		that.updateUnreadCount(totalCount, false);
+		this.updateUnreadCount(totalCount, false);
 	},
 
 	getTotalCount: function(rootFolder) {
