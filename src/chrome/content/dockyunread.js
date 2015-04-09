@@ -110,14 +110,13 @@ var dockyunread = {
 	_getTotalCountTB3: function(rootFolder) {
 		dump("Using _getTotalCountTB3\n");
 		var totalCount = 0;
-		dump("Finding all folders with inbox flag : " + this.MSG_FOLDER_FLAG_INBOX + "\n");
-		var subFolders = rootFolder.getFoldersWithFlags(this.MSG_FOLDER_FLAG_INBOX); //nsIArray
-		var subFoldersEnumerator = subFolders.enumerate();
+		var subFolders = rootFolder.subFolders; // nsIMsgFolder
 		
-		while(subFoldersEnumerator.hasMoreElements()) {
-			var folder = subFoldersEnumerator.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
+		while(subFolders.hasMoreElements()) {
+			var folder = subFolders.getNext().QueryInterface(Components.interfaces.nsIMsgFolder);
 			dump("Get Number of unread messages with travese deep = " +  this.traverseDeep + "\n");
-			totalCount += folder.getNumUnread(this.traverseDeep);
+			if (this.traverseDeep || folder.getFlag(Ci.nsMsgFolderFlags.Inbox))
+				totalCount += folder.getNumUnread(this.traverseDeep);
 		}
 		
 		dump("Found total " + totalCount + "in all subFolders\n");
